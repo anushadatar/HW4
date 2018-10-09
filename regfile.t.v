@@ -140,8 +140,99 @@ output reg		Clk
     dutpassed = 0;
     $display("Test Case 2 Failed");
   end
+ 
+  // Test Case 3:
+  //  Tests for a fully functional register file, true when device
+  //  is functioning, false otherwise. 
+  //  To test this general functionality, I'll read from two registers
+  //  on two ports.
+    WriteRegister = 5'd0;
+    WriteData = 32'd25;
+    RegWrite = 1;
+    ReadRegister1 = 5'd12;
+    ReadRegister2 = 5'd13;
+    #5 Clk=1; #5 Clk=2;
+    WriteRegister = 5'd13;
+    WriteData=32'd21;
+    RegWrite=1;
+    ReadRegister1= 5'd12;
+    ReadRegister2 = 5'd13;
+    #5 Clk=1; #5 Clk=0;
+    // Test if they both have write data.
+    if (ReadData1 != 25 || ReadData2 != 21) begin
+      dutpassed = 0;
+      $display("Test Case 3 Failed."); 
+    end
 
+  // Test Case 4: 
+  //  Tests if write enable is broken or ignored.
+    WriteRegister = 5'd0;
+    WriteData = 32'd12;
+    // Distabling write.
+    RegWrite = 0;
+    ReadRegister1 = 5'd0;
+    ReadRegister2 = 5'd2;
+    #5 Clk=1; #5 Clk=0;
+    // Values should not be changed.
+    if ((ReadData1 == WriteData) || (ReadData2 == WriteData)) begin
+      dutpassed = 0;
+      $display("Test Case 4 Failed.");
+    end
 
+  // Test Case 5: 
+  //  Tests if decoder is broken.
+    WriteRegister = 5'd0;
+    WriteData = 32'd12;
+    RegWrite = 1;
+    ReadRegister1 = 5'd0;
+    ReadRegister2 = 5'd2;
+    #5 Clk =1; #5 Clk=0;
+    // Checks if read register has been written to.
+    // If it has, the decoder is broken.
+    if ((ReadRegister1 != WriteRegister || ReadRegister2 != WriteRegister) && (ReadData1 == WriteData && ReadData2 == WriteData)) begin
+      dutpassed = 0;
+      $display("Test Case 5 Failed.");
+    end 
+
+  // Test Case 6: 
+  //  Tests if Register Zero is actually a register instead of 0
+    WriteRegister = 5'd0;
+    WriteData = 32'd22;
+    RegWrite = 1;
+    ReadRegister1 = 5'd0;
+    ReadRegister2 = 5'd0;
+    #5 Clk=1; #5 Clk=0;
+    // Checks if these have write data.
+    if (ReadData1 != 0 || ReadData2 != 0) begin
+      dutpassed = 0;
+      $display("Test Case 6 Failed."); 
+    end
+
+  // Test Case 7:
+  //  Tests if port 1 is broken.
+    WriteRegister = 5'd0;
+    WriteData = 32'd12;
+    RegWrite = 1;
+    ReadRegister1 = 5'd0;
+    ReadRegister2 = 5'd12;
+    // Checks port reading.
+    if (ReadData1 == 12 || ReadData2 != 12) begin
+      dutpassed= 0;
+      $display("Test Case 7 Failed.");
+    end 
+
+  // Test Case 8:
+  //  Tests if port 2 is broken. 
+    WriteRegister = 5'd0;
+    WriteData = 32'd12;
+    RegWrite = 1;
+    ReadRegister1 = 5'd12;
+    ReadRegister2 = 5'd0;
+    // Checks port reading.
+    if (ReadData1 != 12 || ReadData2 == 12) begin
+      dutpassed = 0;
+      $display("Test Case 8 Failed.");
+    end
   // All done!  Wait a moment and signal test completion.
   #5
   endtest = 1;
